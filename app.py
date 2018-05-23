@@ -5,9 +5,9 @@ import time
 import sys
 import requests
 import json
-import gTTS
 import datetime
 from pocketsphinx import AudioFile
+from gtts import gTTS
 
 # ---------------- record speaker's speech and save it to "speak.wav"------------------------------
 # instantiate PyAudio
@@ -36,8 +36,6 @@ stream = p.open(format=pyaudio.paInt16,  #proekupse meta apo elegxo etoimou .wav
 stream.start_stream()
 
 # wait for stream to finish (5)
-#while stream.is_active():
-#    time.sleep(0.1)
 raw_input("When you finish, press Enter")
 
 # stop stream
@@ -52,11 +50,11 @@ print("Recording Done")
 
 # -------------------------------- Speech to Text ---------------------------
 config = {
-    'audio_file': '/home/elena/Diplwmatikh/FirstTry/speak.wav',
+    'audio_file': './speak.wav',
     # ELLHNIKA
-    #'hmm':'/home/elena/Diplwmatikh/Sphinx/other/cmusphinx-el-gr-5.2/el-gr.cd_cont_5000',
-    #'lm':'/home/elena/Diplwmatikh/Sphinx/other/cmusphinx-el-gr-5.2/el-gr.lm.bin',
-    #'dic':'/home/elena/Diplwmatikh/Sphinx/other/cmusphinx-el-gr-5.2/el-gr.dic'
+    #'hmm':./cmusphinx-el-gr-5.2/el-gr.cd_cont_5000',
+    #'lm':'./cmusphinx-el-gr-5.2/el-gr.lm.bin',
+    #'dic':'./cmusphinx-el-gr-5.2/el-gr.dic'
 }
 
 text = ""
@@ -77,7 +75,6 @@ print(intent)
 # edw, otan oloklhrw8oun ta intents, analoga me to intent pou vrhka 8a anazhtw to katallhlo value (p.x location, pizza_type etc)
 value = (((data['entities'])['location'])[0])['value']
 print(value)
-print(data)
 
 # ----------------------------------- Get weather forecast -------------------------------------
 WEATHER_BASE_URL = 'http://api.openweathermap.org/data/2.5/forecast?id='
@@ -87,7 +84,6 @@ LANG = 'en'
 weather_url = WEATHER_BASE_URL + CITY_ID + '&units=metric' + '&lang=' + LANG + '&APPID=' + APP_ID  # units=metric is for Celcius degrees
 wresp = requests.get(weather_url)
 wdata = wresp.json()
-#print(wdata)
 
 # extract the most important information
 forecast = (wdata['list'])[0]
@@ -99,7 +95,6 @@ humidity = (forecast['main'])['humidity']
 
 temp = datetime.datetime.strptime(time[:10], '%Y-%m-%d').date()
 fDate = temp.strftime('%A %d %B %Y')
-print(fDate)
 localTime = int(time[11:13]) + 3  #extract time and convert it according to timezone (only for Thessaloniki +3)
 # genika mporei na kanei automata allagh wras an 3erei thn perioxh : https://stackoverflow.com/questions/10997577/python-timezone-conversion
 # na to kanw otan 3erw k poies poleis uposthrizw k me ti morfh
