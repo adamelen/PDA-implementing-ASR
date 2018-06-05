@@ -2,13 +2,13 @@ import os
 import pyaudio
 import wave
 
-def record():
-    '''Function "record": records speaker's speech and saves it to "speak.wav"'''
+def record(file_name):
+    '''Function "record": records speaker's speech and saves it to file_name'''
     # instantiate PyAudio
     p = pyaudio.PyAudio()
 
     # prepare wav file
-    wf = wave.open('speak.wav', 'wb')
+    wf = wave.open(file_name, 'wb')
     wf.setnchannels(1)
     wf.setsampwidth(p.get_sample_size(pyaudio.paInt16))
     wf.setframerate(16000)
