@@ -15,7 +15,7 @@ lang = config.get('GENERAL', 'LANGUAGE');
 
 # record user
 if (config.get('FUNCTIONS','RECORD') == 'ON'):
-    record()
+    record(config.get('RECORD', 'RECORD_FILE_NAME'))
 # convert speech to text
 if (config.get('FUNCTIONS', 'SPEECH_TO_TEXT') == 'ON'):
     text = STT(config.get('STT', 'WAV_FILE_NAME'),
