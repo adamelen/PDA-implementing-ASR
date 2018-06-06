@@ -11,3 +11,5 @@ Required modules:
   Installation: pip install gTTS
 - mpg321 (command-line mp3 player)
   Installation: sudo apt-get install mpg321
+- pytz (python timezone module)
+  Installation: pip install --user pytz
