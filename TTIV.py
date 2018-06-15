@@ -15,10 +15,13 @@ def TTIV(access_token, base_url, text):
         if (key == 'keywords'):
             intent = (((data['entities'])[key])[0])['value']
         else:
-            if ((((data['entities'])[key])[0])['type']=='interval'):
-                parameters[key] = {}
-                (parameters[key])['from'] = (((data['entities'])[key])[0])['from']['value']
-                (parameters[key])['to'] = (((data['entities'])[key])[0])['to']['value']
+            if key == 'datetime':
+                if ((((data['entities'])[key])[0])['type']=='interval'):
+                    parameters[key] = {}
+                    (parameters[key])['from'] = (((data['entities'])[key])[0])['from']['value']
+                    (parameters[key])['to'] = (((data['entities'])[key])[0])['to']['value']
+                else:
+                    parameters[key] = (((data['entities'])[key])[0])['value']
             else:
                 parameters[key] = (((data['entities'])[key])[0])['value']
     return (intent, parameters)
