@@ -1,9 +1,3 @@
-# coding=utf-8
-
-import ConfigParser
-import requests
-import json
-import codecs
 from places import places
 
 def hospital(parameters):
