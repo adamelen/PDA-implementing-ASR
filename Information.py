@@ -4,5 +4,5 @@ class Information:
     def __init__(self, s):
         self.service = s
 
-    def useService(self, vc, trl):
-        return self.service.getInfo(vc, trl)
+    def useService(self, vc, trl, lang):
+        return self.service.getInfo(vc, trl, lang)

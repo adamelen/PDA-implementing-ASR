@@ -5,5 +5,5 @@ class Service:
     __metaclass__ = abc.ABCMeta
 
     @abc.abstractmethod
-    def getInfo(self, vc, trl):
+    def getInfo(self, vc, trl, lang):
         pass

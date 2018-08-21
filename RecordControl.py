@@ -30,9 +30,8 @@ class RecordControl:
         # start the stream
         print("Recording starts")
         self.stream.start_stream()
-        # wait for stream to finish
-        raw_input("When you finish, press Enter")
 
+    def stop_recording(self):
         # stop stream
         self.stream.stop_stream()
         self.stream.close()

@@ -5,6 +5,7 @@ import requests
 import json
 import datetime
 import time
+import difflib
 import pytz
 from Service import Service
 from Openweathermap import Openweathermap
@@ -17,15 +18,26 @@ class WeatherAdapter(Service):
         # get information from config file
         config = ConfigParser.ConfigParser()
         config.read('config.ini')
-        self.lang = (config.get('GENERAL', 'LANGUAGE')).lower()
         self.tz_base_url = config.get('TIMEZONE', 'BASE_URL')
         self.tz_app_id = config.get('TIMEZONE', 'APP_ID')
-        self.check = config.get('WEATHER', 'SPECIFIC_CITY_NAME')
+        self.loc_base_url = config.get('PLACES', 'FIND_LOCATION_BASE_URL')
         self.APIs = {
             'openweathermap': lambda: Openweathermap(),
             'xweather': lambda: Xweather()
             } 
         self.w = self.APIs[config.get('WEATHER','CHOOSE_API')]() # weather object
+        self.responses = {
+            'el':
+            [u"\nΑν θέλεις τον καιρό σε άλλη πόλη, επανάλαβε το ερώτημά σου συμπεριλαμβάνοντας την πόλη.",
+             u"\nΑν θέλεις τον καιρό σε άλλη χρονική στιγμή, επανάλαβε το ερώτημά σου συμπεριλαμβάνοντας τη χρονική στιγμή.",
+             u"{}: {} {} η ώρα, η πρόγνωση του καιρού είναι {}. Η ελάχιστη θερμοκρασία θα είναι {} και η μέγιστη {} βαθμοί Κελσίου. Η υγρασία θα είναι {} τα εκατό.",
+             u"Δεν υπάρχει πρόγνωση καιρού για τόσες μέρες μετά, μόνο για τις επόμενες 5 μέρες."],
+            'en':
+            ["\nIf you want to know the weather in another city, ask your question again specifying the city name.",
+             "\nIf you want to know about the weather in another moment, ask your question again specifying that moment.",
+             "Weather forecast in {} at {} {} o'clock is {}. Minimum temperature will be {} and maximum {} Celsius degrees. Humidity will be {} percent.",
+             "There is no weather forecast for so many days ahead, only for the next {} days."]
+            }
 
     def find_coordinates(self, city_name):
         ''' Find the coordinates of the given city '''
@@ -37,7 +49,7 @@ class WeatherAdapter(Service):
         return (lat, lng)
 
     def convert_datetime(self, dt, lat, lng, convert_to):
-        ''' Converts either utc time to local or local to utc based on the city_name '''
+        ''' Converts either utc time to local or local to utc based on the city's coordinates '''
         # find time from epoch
         timestamp = time.mktime(dt.timetuple())
 
@@ -56,40 +68,47 @@ class WeatherAdapter(Service):
             newDatetime = (dt.astimezone(pytz.utc)).replace(tzinfo=None)
         return newDatetime
 
-    def getInfo(self, vc, trl):
+    def getInfo(self, vc, trl, lang):
         ''' Get the weather forecast by calling the API that config.ini states. It processes the data before and after the call to the API '''
-        if (self.check == 'ON'):
-            city_name = config.get('WEATHER', 'CITY_NAME')  # use a predefined city_name
-        else:
+        addText = ''
+        # check if the user gave location and datetime, otherwise use the current ones and inform him about it
+        if 'location' in vc.parameters:
             city_name = vc.parameters['location']
+        else:
+            loc_resp = requests.get(self.loc_base_url)
+            loc_data = json.loads(loc_resp.text)   
+            city_name = str(loc_data['city'])
+            addText = addText + self.responses[lang][0] 
 
         (lat, lng) = self.find_coordinates(city_name)
 
-        # extract information about the date and time the user said
-        if 'from' in vc.parameters['datetime']:  # if there is an interval in 'datetime', extract the time it starts and add 4 hours in order to get the middle of the interval
-            dt_from = datetime.datetime.strptime((vc.parameters['datetime'])['from'], '%Y-%m-%dT%H:%M:%S.000+00:00')
-            dt_from = self.convert_datetime(dt_from, lat, lng, 'utc')  # suppose that the time is in the timezone of the city_name -> convert it to UTC
-            dt = dt_from + datetime.timedelta(hours=4)
+        if 'datetime' in vc.parameters:
+            # extract information about the date and time the user said
+            if 'from' in vc.parameters['datetime']:  # if there is an interval in 'datetime', extract the time it starts and add 4 hours in order to get the middle of the interval
+                dt_from = datetime.datetime.strptime((vc.parameters['datetime'])['from'], '%Y-%m-%dT%H:%M:%S.000+00:00')
+                dt_from = self.convert_datetime(dt_from, lat, lng, 'utc')  # suppose that the time is in the timezone of the city_name -> convert it to UTC
+                dt = dt_from + datetime.timedelta(hours=4)
+            else:
+                dt = datetime.datetime.strptime(vc.parameters['datetime'], '%Y-%m-%dT%H:%M:%S.000+00:00')
+                dt = self.convert_datetime(dt, lat, lng, 'utc')
         else:
-            dt = datetime.datetime.strptime(vc.parameters['datetime'], '%Y-%m-%dT%H:%M:%S.000+00:00')
-            dt = self.convert_datetime(dt, lat, lng, 'utc')
+            dt = datetime.datetime.utcnow() + datetime.timedelta(minutes=10)  # get the next available weather forecast, asking about the forecast for 10 minutes later (in order not to get an error if there is a delay somewhere)
+            addText = addText + self.responses[lang][1]
 
-        # Call the API
-        info = self.w.getWeather(city_name, lat, lng, dt)
+        # call the API to get the weather forecast
+        info = self.w.getWeather(city_name, dt, lang)
 
-        # If there aren't any errors, return the weather forecast
-        if (info['error_days'] == None):
+        if (info['error_days'] == None):    
             localDatetime = self.convert_datetime(info['dt_new'], lat, lng, 'local')  #convert date and time according to timezone
             localDate = localDatetime.strftime('%A %d %B %Y')  #extract date
             localTime = int(localDatetime.strftime('%H'))  #extract time
 
-            vc.textToTell = "Weather forecast for {} {} o'clock is {}. Minimum temperature will be {} and maximum {} Celsius degrees. Humidity will be {} percent.".format(localDate, str(localTime), info['weather'], str(info['temp_min']), str(info['temp_max']), str(info['humidity']))
-        # otherwise display the error message
-        else:
-            vc.textToTell = 'There is no weather forecast for so many days ahead, only for the next {} days.'.format(info['error_days'])
+            if (lang == 'el'):
+                city_name = trl.translate(city_name, 'en', 'el')
+                localDate = trl.translate(localDate, 'en', 'el')
 
-        # Translate the above text in Greek if the desired language is Greek
-        if (self.lang == 'el'):  
-            vc.textToTell = trl.translation(vc.textToTell, 'en', 'el')
+            vc.textToTell = self.responses[lang][2].format(city_name.capitalize(), localDate, localTime, info['weather'], info['temp_min'], info['temp_max'], info['humidity']) + addText
+        else:
+            vc.textToTell = self.responses[lang][3].format(info['error_days'])
 
         return vc

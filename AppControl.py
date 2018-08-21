@@ -1,6 +1,9 @@
+# coding: utf-8
+
 import ConfigParser
 from gtts import gTTS
-import os
+import unicodedata as ud
+from word2number import w2n
 from VoiceCommand import VoiceCommand
 from RecordControl import RecordControl
 from SpeechRecognitionControl import SpeechRecognitionControl
@@ -9,7 +12,8 @@ from TextToIntentValue import TextToIntentValue
 from Information import Information
 from Service import Service
 from WeatherAdapter import WeatherAdapter
-from Places import Places
+from TextToSpeech import TextToSpeech
+from PlaceServiceAdapter import PlaceServiceAdapter
 
 class AppControl:
     ''' A <<Controller>> class that controls the main functionality of the program through the function appControl() '''
@@ -17,53 +21,116 @@ class AppControl:
     def __init__(self):
         self.services = {
            'weather': lambda: WeatherAdapter(),
-           'hospital': lambda: Places('hospital', 'hospitals'),
-           'pharmacy': lambda: Places('pharmacy', 'pharmacies')
+           'hospital': lambda: PlaceServiceAdapter('hospital'),
+           'pharmacy': lambda: PlaceServiceAdapter('pharmacy')
            } 
-
-    def app(self):
         # read config file
-        config = ConfigParser.ConfigParser()
-        config.read('config.ini')
+        self.config = ConfigParser.ConfigParser()
+        self.config.read('config.ini')
+        #self.lang = self.config.get('GENERAL', 'LANGUAGE')
+        self.vc = VoiceCommand()  # create a VoiceCommand object
+        self.latin_letters= {}
+        self.responses = {
+            'el': 
+            [u"Παρακαλώ επαναλάβετε αυτό που είπατε ή γράψτε το στο παρακάτω πλαίσιο (είναι πιο εύκολο να καταλάβω το γραπτό λόγο).",
+             u"Δεν υπάρχουν πληροφορίες για την τοποθεσία που ζητήσατε. Αντικαταστήστε την με κάποια κοντινή της που είναι γνωστότερη.",
+             u"Αυτά που είπατε δε σχετίζονται με κάποια υπηρεσία. Κάντε ένα ερώτημα για τον καιρό, τα νοσοκομεία ή τα φαρμακεία."],
+            'en':
+            ["Please repeat your question or write it in the box below (it's easier for me to understand written language).",
+             "There is no information about the place you asked for. Replace it with a better known place close to it.",
+             "Your question is irrelevant to the services provided. Ask a question about the weather, hospitals or pharmacies."]
+            }
 
-        lang = config.get('GENERAL', 'LANGUAGE') # mhpws to lang na mpei san attribute?
-        vc = VoiceCommand()  # create a VoiceCommand object
+    def is_latin(self, uchr):
+        try: return self.latin_letters[uchr]
+        except KeyError:
+            return self.latin_letters.setdefault(uchr, 'LATIN' in ud.name(uchr))
+
+    # checks if there are any not latin characters
+    def only_roman_chars(self, unistr):
+        return all(self.is_latin(uchr)
+               for uchr in unistr
+               if uchr.isalpha())
+
+    def start_rec(self):
+        self.rec = RecordControl(self.config.get('RECORD', 'RECORD_FILE_NAME'))  # create a RecordControl object
+        self.rec.record()  # and call the method that starts the recording
+
+    def stop_rec(self):
+        self.rec.stop_recording()  # call the method that stops the recording
+
+    # The reason why there are 2 methods for STT control is that we want to do the initialization step in the main thread of the MainScreenUI and the rest in another thread that runs in the background in order the GUI not to freeze
+    def initialize_STT(self, lang):
+        config = self.config
+        print("before")
+        self.speech = SpeechRecognitionControl(config.get(lang.upper(), 'HMM'),
+                                            config.get(lang.upper(), 'LM'),
+                                            config.get(lang.upper(), 'DIC'))
+        print("after")
+
+    # convert speech to text
+    def convert_to_text(self):
+        print("convert to text")
+        self.vc = self.speech.STT(self.config.get('STT', 'WAV_FILE_NAME'), self.vc)
+        print("STT result: " + self.vc.text)
+
+    def process_input(self, lang, text=''):
+        config = self.config
+        print("lang = " + lang)
+
+        vc = self.vc
+        if text != '':
+            vc.text = text
+
+        tts = TextToSpeech()
+        # check if the user gave an empty or a None text
+        if (vc.text == None or vc.text == ''):
+            tempText = self.responses[lang][0]
+            tts.TTS(tempText, lang)
+            return tempText
+
         trl = Translation(config.get('TRANSLATION', 'BASE_URL'),  # create a Translation object
                           config.get('TRANSLATION', 'APP_ID'))
 
-        # record user
-        if (config.get('FUNCTIONS','RECORD') == 'ON'):
-            rec = RecordControl(config.get('RECORD', 'RECORD_FILE_NAME'))
-            rec.record()
-
-        # convert speech to text
-        if (config.get('FUNCTIONS', 'SPEECH_TO_TEXT') == 'ON'):
-            speech = SpeechRecognitionControl(config.get('STT', 'WAV_FILE_NAME'),
-                                            config.get(lang, 'HMM'),
-                                            config.get(lang, 'LM'),
-                                            config.get(lang, 'DIC'))
-            vc = speech.STT(vc)
-            print("STT result: " + vc.text)
-
         # if text isn't in English, translate it
-        if (config.get('FUNCTIONS', 'TRANSLATION') == 'ON'):
-            if (lang == 'EL'):
-                if (config.get('TRANSLATION', 'SPECIFIC_TEXT') == 'ON'):
-                    vc.text = config.get('TRANSLATION', 'TEXT')
-                    print(vc.text)
-                vc.text = trl.translation(vc.text, 'el', 'en')
-                print('Translation result: ' + vc.text)
+        if (lang == 'el'):
+            vc.text = trl.translate(vc.text, 'el', 'en')
+            print('Translation result: ' + vc.text)
+
+        # check if there are any Greek characters in vc.text and return an error text if there are, because TTIV can't recognize greek characters
+        if (self.only_roman_chars(vc.text)==False):
+            tempText = self.responses[lang][1]
+            return tempText
+
+# ***************** mporei nomizw na fugei auto ***************
+        numbers = ['one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen', 'twenty', 'thirty', 'fourty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety']
+
+        # convert words that describe numbers to numbers. In that way wit.ai understands better the parameters
+        for n1 in numbers[19:]:
+            if n1 in vc.text:
+                for n2 in numbers[:19]:
+                    if ("{}-{}".format(n1, n2) in vc.text):
+                        vc.text = vc.text.replace("{}-{}".format(n1, n2), str(w2n.word_to_num("{}-{}".format(n1, n2))))
+
+        for n in numbers:  # convert one-word numbers (four)
+            if "{} ".format(n) in vc.text or "{}-".format(n) in vc.text:
+                vc.text = vc.text.replace(n, str(w2n.word_to_num(n)))
+
+# **************************************************************
 
         # extract intent and value from text
         if (config.get('FUNCTIONS','TEXT_TO_INTENT_VALUE') == 'ON'):
-            if (config.get('TTIV', 'SPECIFIC_TEXT') == 'ON'):  # use a predefined text, otherwise use the text that was returned by STT
-                vc.text = config.get('TTIV', 'TEXT')
             ttiv = TextToIntentValue(config.get('TTIV', 'WIT_ACCESS_TOKEN'),
                                      config.get('TTIV', 'BASE_URL'))
             vc = ttiv.TTIV(vc)
-            print("TTIV result:")
-            print(vc.intent)
-            print(vc.parameters)
+            if vc.intent not in self.services:
+                tempText = self.responses[lang][2]
+                tts.TTS(tempText, lang)
+                return tempText
+            else: 
+                print("TTIV result:")
+                print(vc.intent)
+                print(vc.parameters)
 
         # get the info that the user asked for
         if (config.get('FUNCTIONS', 'GET_INFO') == 'ON'):
@@ -73,12 +140,14 @@ class AppControl:
             else:
                 service = vc.intent
             info = Information(self.services[service]())
-            vc = info.useService(vc, trl)
+            vc = info.useService(vc, trl, lang)
             print(vc.textToTell)
-            ttsobj = gTTS(vc.textToTell, lang=lang.lower())
-            ttsobj.save("textToSpeech.mp3")
-            os.system("mpg321 textToSpeech.mp3")
+            tts.TTS(vc.textToTell, lang)
+            return vc.textToTell
+        return ''
 
 if __name__ == '__main__':
     app = AppControl()
-    app.app()
+    app.initialize_STT('en')
+    app.convert_to_text()
+    app.process_input('en')

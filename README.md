@@ -13,3 +13,7 @@ Required modules:
   Installation: sudo apt-get install mpg321
 - pytz (python timezone module)
   Installation: pip install --user pytz
+- Kivy (GUI module)
+  Installation: https://kivy.org/#download
+
+Run the code with the command: "python MainScreenUI.py"

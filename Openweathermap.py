@@ -6,6 +6,7 @@ import json
 import datetime
 import time
 import difflib
+import pytz
 from Weather import Weather
 
 class Openweathermap(Weather):
@@ -43,7 +44,7 @@ class Openweathermap(Weather):
         city_id = (city.next())['id']
         return str(city_id)
 
-    def getWeather(self, city_name, lat, lon, dt):
+    def getWeather(self, city_name, dt, lang):
         info = {}
         city_id = self.find_city_id(city_name)  # find the city_id that corresponds to the city_name
 
@@ -68,7 +69,7 @@ class Openweathermap(Weather):
             final_index = days*len(self.hours) + dt_hour_index - i
 
             # request the information about the weather from the api
-            weather_url = "{}{}&units=metric&APPID={}".format(self.base_url, city_id, self.app_id)  # units=metric is for Celcius degrees
+            weather_url = "{}{}&units=metric&lang={}&APPID={}".format(self.base_url, city_id, lang, self.app_id)  # units=metric is for Celcius degrees
             wresp = requests.get(weather_url)
             wdata = wresp.json()    
 

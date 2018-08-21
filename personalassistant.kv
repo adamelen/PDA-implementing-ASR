@@ -1,0 +1,113 @@
+#:kivy 1.10.0
+#:import tr __main__.tr
+
+<MainScreen>:
+    btn: button1
+    label: label1
+    txt_input: text_input
+    scrollable_label: slabel
+
+    canvas:
+        Color:
+            rgb: 1, 1, 1
+        Rectangle:
+            pos: self.pos
+            size: self.size
+        Color:
+            rgb: 0.26, 0.74, 0.96
+        Rectangle:
+            pos: 0, self.height * 0.9
+            size: self.width, self.height * 0.1
+
+
+    Label:
+        pos_hint: {'y': 0.45}
+        text: 'Personal Assistant'
+
+    Label:
+        id: label1
+        text: tr._('Press the button to ask a question')
+        text_size: self.size
+        halign: 'center'
+        valign: 'middle'
+        color: 0, 0, 0, 1
+        pos_hint: {'y': 0.15}
+
+    Button:
+        id: button1
+        size_hint: 0.4, 0.2
+        pos_hint: {'center_x': 0.5, 'center_y': 0.5}
+        background_color: 0.22, 0.72, 0.2, 1
+        text: tr._('Start')
+        on_press: root.btn1_pressed()
+
+    Label:
+        pos_hint: {'y': -0.15}
+        color: 0, 0, 0, 1
+        text: tr._('Or write your question below and press Ok')
+        text_size: self.size
+        halign: 'center'
+        valign: 'middle'
+
+    TextInput:
+        id: text_input
+        size_hint: None, None
+        size: 200, 80
+        pos_hint: {'center_x': 0.5, 'center_y': 0.2}
+
+    Button:
+        size_hint: None, None
+        size: 40, 40
+        text: tr._('Ok')
+        pos_hint: {'x': 0.85, 'center_y': 0.2}
+        on_press: root.btn2_pressed()
+
+    Button:
+        size_hint: None, None
+        size: 70, 20
+        pos_hint: {'right': 0.9, 'top': 1}
+        text: tr._('Greek')
+        on_release: app.lang = 'el'
+
+    Button:
+        size_hint: None, None
+        size: 70, 20
+        pos_hint: {'right': 1, 'top': 1}
+        text: tr._('English')  
+        on_release: app.lang = 'en'  
+
+    ScrollView:
+        id: slabel
+        pos_hint: {'y': 0.7}
+        size_hint: 1, 0.2
+        mylabel: label2
+        Label:
+            id: label2
+            text: ''
+            text_size: self.width, None
+            size_hint_y: None
+            height: self.texture_size[1]
+            halign: 'left'
+            valign: 'middle'
+            color: 0, 0, 0, 1
+
+    Button: 
+        size_hint: None, None
+        size: 100, 50
+        pos_hint: {'right': 0.95, 'center_y': 0.55}
+        background_color: 0.88, 0.09, 0.09, 1
+        text: tr._('Cancel question')
+        text_size: self.size
+        halign: 'center'
+        valign: 'middle'
+        on_press: root.cancel()
+
+    Button:
+        size_hint: None, None
+        size: 70, 30
+        pos_hint: {'right': 0.95, 'center_y': 0.65}
+        text: tr._('Mute')
+        halign: 'center'
+        valign: 'middle'
+        on_press: root.mute()       
+

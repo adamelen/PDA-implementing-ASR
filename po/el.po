@@ -1,0 +1,55 @@
+msgid ""
+msgstr ""
+
+"Project-Id-Version: 1.0\n"
+"PO-Revision-Date: 2018-07-27 10:04+0300\n"
+"Last-Translator: Adamantidou Eleni <adamelen24@gmail.com>\n"
+"Language-Team: Adamantidou Eleni <adamelen24@gmail.com>\n"
+"Language: Ελληνικά\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: lang.kv:28, MainScreenUI.py:94
+msgid "Press the button to ask a question"
+msgstr "Πατήστε το κουμπί για να μιλήσετε"
+
+#: lang.kv:40, MainScreenUI.py:93
+msgid "Start"
+msgstr "Εκκίνηση"
+
+#: lang.kv:46
+msgid "Or write your question below and press Ok"
+msgstr "Ή γράψτε αυτό που θέλετε παρακάτω και πατήστε το Οκ"
+
+#: lang.kv:60
+msgid "Ok"
+msgstr "Οκ"
+
+#: lang.kv:69
+msgid "Greek"
+msgstr "Ελληνικά"
+
+#: lang.kv:75
+msgid "English"
+msgstr "Αγγλικά"
+
+#: lang.kv:99
+msgid "Cancel question"
+msgstr "Ακύρωση ερώτησης"
+
+#: lang.kv:110
+msgid "Mute"
+msgstr "Σίγαση"
+
+#: MainScreenUI.py:86
+msgid "Stop"
+msgstr "Διακοπή"
+
+#: MainScreenUI.py:87
+msgid "Press the Stop button when you finish your question"
+msgstr "Πατήστε το κουμπί όταν ολοκληρώσετε αυτό που θέλετε να πείτε"
+
+#: MainScreenUI.py:96, MainScreenUI.py:103
+msgid "Please wait"
+msgstr "Παρακαλώ περιμένετε"

@@ -5,5 +5,5 @@ class Weather:
     __metaclass__ = abc.ABCMeta
 
     @abc.abstractmethod
-    def getWeather(self, city_name, lat, lon, dt):
+    def getWeather(self, city_name, dt):
         pass
