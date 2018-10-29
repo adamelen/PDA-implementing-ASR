@@ -30,12 +30,12 @@ class WeatherAdapter(Service):
             'el':
             [u"\nΑν θέλεις τον καιρό σε άλλη πόλη, επανάλαβε το ερώτημά σου συμπεριλαμβάνοντας την πόλη.",
              u"\nΑν θέλεις τον καιρό σε άλλη χρονική στιγμή, επανάλαβε το ερώτημά σου συμπεριλαμβάνοντας τη χρονική στιγμή.",
-             u"{}: {} {} η ώρα, η πρόγνωση του καιρού είναι {}. Η ελάχιστη θερμοκρασία θα είναι {} και η μέγιστη {} βαθμοί Κελσίου. Η υγρασία θα είναι {} τα εκατό.",
+             u"{}: {} {} η ώρα, η πρόγνωση του καιρού είναι {}. Η θερμοκρασία θα είναι {} βαθμοί Κελσίου. Η υγρασία θα είναι {} τα εκατό.",
              u"Δεν υπάρχει πρόγνωση καιρού για τόσες μέρες μετά, μόνο για τις επόμενες 5 μέρες."],
             'en':
             ["\nIf you want to know the weather in another city, ask your question again specifying the city name.",
              "\nIf you want to know about the weather in another moment, ask your question again specifying that moment.",
-             "Weather forecast in {} at {} {} o'clock is {}. Minimum temperature will be {} and maximum {} Celsius degrees. Humidity will be {} percent.",
+             "Weather forecast in {} at {} {} o'clock is {}. Temperature will be {} Celsius degrees. Humidity will be {} percent.",
              "There is no weather forecast for so many days ahead, only for the next {} days."]
             }
 
@@ -107,7 +107,7 @@ class WeatherAdapter(Service):
                 city_name = trl.translate(city_name, 'en', 'el')
                 localDate = trl.translate(localDate, 'en', 'el')
 
-            vc.textToTell = self.responses[lang][2].format(city_name.capitalize(), localDate, localTime, info['weather'], info['temp_min'], info['temp_max'], info['humidity']) + addText
+            vc.textToTell = self.responses[lang][2].format(city_name.capitalize(), localDate, localTime, info['weather'], info['temp'], info['humidity']) + addText
         else:
             vc.textToTell = self.responses[lang][3].format(info['error_days'])
 

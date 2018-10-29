@@ -102,21 +102,8 @@ class AppControl:
             tempText = self.responses[lang][1]
             return tempText
 
-# ***************** mporei nomizw na fugei auto ***************
-        numbers = ['one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen', 'twenty', 'thirty', 'fourty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety']
-
-        # convert words that describe numbers to numbers. In that way wit.ai understands better the parameters
-        for n1 in numbers[19:]:
-            if n1 in vc.text:
-                for n2 in numbers[:19]:
-                    if ("{}-{}".format(n1, n2) in vc.text):
-                        vc.text = vc.text.replace("{}-{}".format(n1, n2), str(w2n.word_to_num("{}-{}".format(n1, n2))))
-
-        for n in numbers:  # convert one-word numbers (four)
-            if "{} ".format(n) in vc.text or "{}-".format(n) in vc.text:
-                vc.text = vc.text.replace(n, str(w2n.word_to_num(n)))
-
-# **************************************************************
+        if ("-" in vc.text):
+            vc.text = vc.text.replace("-", " ")
 
         # extract intent and value from text
         if (config.get('FUNCTIONS','TEXT_TO_INTENT_VALUE') == 'ON'):

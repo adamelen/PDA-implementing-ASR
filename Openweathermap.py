@@ -77,15 +77,13 @@ class Openweathermap(Weather):
             forecast = (wdata['list'])[final_index]
             datetime_str = forecast['dt_txt']  # in UTC
             info['weather'] = ((forecast['weather'])[0])['description']
-            info['temp_max'] = int((forecast['main'])['temp_max'])
-            info['temp_min'] = int((forecast['main'])['temp_min'])
+            info['temp'] = int((forecast['main'])['temp'])
             info['humidity'] = (forecast['main'])['humidity']
             info['dt_new'] = datetime.datetime.strptime(datetime_str, '%Y-%m-%d %H:%M:%S') # date and time of forecast
             info['error_days'] = None
         else:
             info['weather'] = None
-            info['temp_max'] = None
-            info['temp_min'] = None
+            info['temp'] = None
             info['humidity'] = None
             info['dt_new'] = None
             info['error_days'] = self.error_days

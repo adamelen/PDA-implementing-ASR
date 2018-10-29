@@ -11,9 +11,7 @@ class SpeechRecognitionControl:
             'lm': lm,
             'dic': dic
         }
-        print("1")
         self.ps = Pocketsphinx(**config)
-        print("2")
 
     def STT(self, audio_f, vc):
         '''Imports a .wav file and converts speech to text using pocketsphinx'''

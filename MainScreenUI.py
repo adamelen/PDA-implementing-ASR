@@ -120,7 +120,7 @@ class MainScreen(FloatLayout):
         t3 = threading.Thread(target=self.call_app)
         t3.start()
 
-    # "Cancels" current process. If cancel button is pressed, the response is not displayed to the user.
+    # "Cancel's" current process. If cancel button is pressed, the response is not displayed to the user.
     def cancel(self):
         self.flag = 1
 

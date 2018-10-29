@@ -18,6 +18,10 @@ msgstr "Πατήστε το κουμπί για να μιλήσετε"
 msgid "Start"
 msgstr "Εκκίνηση"
 
+#: lang.kv:31
+msgid "Results"
+msgstr "Αποτελέσματα"
+
 #: lang.kv:46
 msgid "Or write your question below and press Ok"
 msgstr "Ή γράψτε αυτό που θέλετε παρακάτω και πατήστε το Οκ"
@@ -32,7 +36,7 @@ msgstr "Ελληνικά"
 
 #: lang.kv:75
 msgid "English"
-msgstr "Αγγλικά"
+msgstr "English"
 
 #: lang.kv:99
 msgid "Cancel question"

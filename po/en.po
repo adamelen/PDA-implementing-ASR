@@ -18,6 +18,10 @@ msgstr ""
 msgid "Start"
 msgstr ""
 
+#: lang.kv:31
+msgid "Results"
+msgstr ""
+
 #: lang.kv:46
 msgid "Or write your question below and press Ok"
 msgstr ""
@@ -28,7 +32,7 @@ msgstr ""
 
 #: lang.kv:69
 msgid "Greek"
-msgstr ""
+msgstr "Ελληνικά"
 
 #: lang.kv:75
 msgid "English"

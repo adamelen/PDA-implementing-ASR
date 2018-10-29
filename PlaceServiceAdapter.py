@@ -46,8 +46,8 @@ class PlaceServiceAdapter(Service):
     def getInfo(self, vc, trl, lang):
 
         if ('location' in vc.parameters):
-            if  ('near' in vc.parameters['location'] or 'here' in vc.parameters['location']):
-                del vc.parameters['location']  # because wit.ai stores words like "nearby" in "location", but I don't want this to happen
+            if  ('near' in vc.parameters['location'] or 'here' in vc.parameters['location'] or 'close proximity' in vc.parameters['location'] or 'distance' in vc.parameters['location'] or 'closest' in vc.parameters['location']):
+                del vc.parameters['location']  # because wit.ai stores words like "near" in "location", but I don't want this to happen
 
         addText = ''  # text to add to the textToTell in order to inform the user for any parameters he could add
         city_name = ''  # in all but one cases city_name is an empty string
